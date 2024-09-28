@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using BepInEx;
-using BepInEx.Configuration;
 using Eremite;
 using Eremite.Controller;
 using Eremite.Services;
@@ -8,6 +7,7 @@ using Eremite.View.HUD.Construction;
 using HarmonyLib;
 using UniRx;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Stormwalker;
 
@@ -32,8 +32,8 @@ public class Plugin : BaseUnityPlugin
         Instance = this;
         harmony = Harmony.CreateAndPatchAll(typeof(Patches).Assembly);
 
-        InputConfigs.RegisterKey("Zoom Overview", Configs.Zoom_Toggle, ZoomToggled);
-        InputConfigs.RegisterKey("Super Speed", [KeyCode.Alpha5], SuperSpeedToggled);
+        InputConfigs.RegisterKey("Stormwalker", "zoom", "Zoom Overview", Configs.Zoom_Toggle, ZoomToggled);
+        InputConfigs.RegisterKey("Stormwalker", "5X", "5X Speed", [KeyCode.Alpha5], SuperSpeedToggled);
 
         gameObject.AddComponent<Woodcutters>();
         gameObject.AddComponent<BuildingCopier>();
@@ -56,6 +56,11 @@ public class Plugin : BaseUnityPlugin
         }
 
         MB.GameSaveService.IsSaving.Where(isStarting => !isStarting).Subscribe(_ => Save());
+    }
+
+    private void Update()
+    {
+        InputConfigs.Update();
     }
 
     private static void Save()
@@ -87,13 +92,21 @@ public class Plugin : BaseUnityPlugin
         }
     }
 
-    private static void SuperSpeedToggled()
+    private static void SuperSpeedToggled(InputAction.CallbackContext context)
     {
-        GameMB.TimeScaleService.Change(SUPER_SPEED_SCALE, true, false);
+        if (context.performed)
+        {
+            GameMB.TimeScaleService.Change(SUPER_SPEED_SCALE, true, false);
+        }
     }
 
-    private void ZoomToggled()
+    private void ZoomToggled(InputAction.CallbackContext context)
     {
+        if (!context.performed)
+        {
+            return;
+        }
+        
         if (!zoomLimit.HasValue)
         {
             zoomLimit = GameController.Instance.CameraController.zoomLimit;

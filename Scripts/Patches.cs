@@ -69,13 +69,11 @@ namespace Stormwalker
             WorkerSlotPatches.TryUnassign(production);
         }
 
-        [HarmonyPatch(typeof(BuildingProductionSlot), nameof(BuildingProductionSlot.SetStatus))]
+        [HarmonyPatch(typeof(WorkerStatusSlot), nameof(WorkerStatusSlot.SetUpActor))]
         [HarmonyPrefix]
-        private static void OverrideProduction(BuildingProductionSlot __instance, ref Func<string> descSource){
-            if(WorkerSlotPatches.UpdateMarkerStatus(__instance)){
-                string original = descSource.Invoke();
-                descSource = (() => original + "; worker set to leave once production finishes");
-            }
+        private static void OverrideProduction(WorkerStatusSlot __instance)
+        {
+            WorkerSlotPatches.UpdateMarkerStatus(__instance);
         }
 
         [HarmonyPatch(typeof(VillagersService), nameof(VillagersService.RemoveFromProfession))]

@@ -32,8 +32,8 @@ namespace Stormwalker {
 
         public static void QueueToggleUnassign(BuildingWorkerSlot slot){
             PutMarkerIn(slot);
-            if(!toUnassign.Remove(slot.villager.Id)){
-                toUnassign.Add(slot.villager.Id);
+            if(!toUnassign.Remove(slot.actor.Id)){
+                toUnassign.Add(slot.actor.Id);
             }
         }
 
@@ -49,12 +49,12 @@ namespace Stormwalker {
         public static void Remove(Villager villager){
             toUnassign.Remove(villager.Id);
         }
-
-        public static bool UpdateMarkerStatus(BuildingProductionSlot slot){
+        
+        public static bool UpdateMarkerStatus(WorkerStatusSlot slot){
             var go = slot.transform.Find($"StatusIcon/{MARKER_NAME}");
             if(go == null)
                 return false;
-            bool result = toUnassign.Contains(slot.villager.Id);
+            bool result = toUnassign.Contains(slot.actor.Id);
             go.SetActive(result);
             return result;
         }

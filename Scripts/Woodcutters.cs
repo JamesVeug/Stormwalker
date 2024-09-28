@@ -1,9 +1,7 @@
 using System;
-using System.Linq;
-using BepInEx.Configuration;
 using Eremite;
 using Eremite.Buildings;
-using Eremite.Characters.Villagers;
+using Eremite.Characters;
 using Eremite.Model.State;
 using Eremite.View.HUD.Woodcutters;
 
@@ -15,9 +13,27 @@ public class Woodcutters : GameMB {
 
     private void Awake()
     {
-        InputConfigs.RegisterKey("assignOne", Configs.Woodcutters_AssignOne, ()=>woodcuttersHUD.OnRightClick());
-        InputConfigs.RegisterKey("unassignAll", Configs.Woodcutters_UnassignAll, ()=>woodcuttersHUD.OnClick());
-        InputConfigs.RegisterKey("balanceHostility", Configs.Woodcutters_BalanceHostility, ()=>UnassignSomePressed());
+        InputConfigs.RegisterKey("Stormwalker", "assign1", "Assign one Villager", Configs.Woodcutters_AssignOne, (ctx)=>
+        {
+            if (ctx.performed)
+            {
+                woodcuttersHUD.OnRightClick();
+            }
+        });
+        InputConfigs.RegisterKey("Stormwalker", "unassignAll", "Unassign all Villagers", Configs.Woodcutters_UnassignAll, (ctx)=>
+        {
+            if (ctx.performed)
+            {
+                woodcuttersHUD.OnClick();
+            }
+        });
+        InputConfigs.RegisterKey("Stormwalker", "balanceHostility", "Unassign Villagers to lower Hostility", Configs.Woodcutters_BalanceHostility, (ctx)=>
+        {
+            if (ctx.performed)
+            {
+                UnassignSomePressed();
+            }
+        });
     }
 
     public void PatchPanel(WoodcuttersHUD hud){
@@ -33,11 +49,11 @@ public class Woodcutters : GameMB {
         }
     }
 
-    private int UnassignAll(Camp camp){
-        var workers = camp.state.workers.Where(i=>i>0).Count();
-        if(workers > 0) camp.ClearWorkers();
-        return workers;
-    }
+    // private int UnassignAll(Camp camp){
+    //     var workers = camp.state.workers.Where(i=>i>0).Count();
+    //     if(workers > 0) camp.ClearWorkers();
+    //     return workers;
+    // }
 
     private bool canLowerHostility(out int amount){
         if((HostilityService as Eremite.Services.HostilityService).IsFirstLevel()){
@@ -68,12 +84,21 @@ public class Woodcutters : GameMB {
     }
 
     private int TryUnassignOne(Camp camp){
-        foreach (int num in camp.state.workers) {
-            if (num > 0){
-                camp.GetVillagerRole<Forager>(num).ReactToRemovedCamp();
+        for (int i = 0; i < camp.Workers.Length; i++)
+        {
+            int id = camp.Workers[i];
+            if (!GameMB.ActorsService.HasActor(id))
+            {
+                continue;
+            }
+            Actor actor = GameMB.ActorsService.GetActor(id);
+            if (!actor.IsBoundToWorkplace)
+            {
+                VillagersService.ReleaseFromProfession(GameMB.VillagersService.GetVillager(camp.Workers[i]));
                 return 1;
             }
         }
+        
         return 0;
     }
 

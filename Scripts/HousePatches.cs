@@ -31,7 +31,6 @@ namespace Stormwalker {
         }
 
         private static GameObject CreateResidentSlider(GameObject parent){
-
             var result = Utils.MakeGameObject(parent, "StormwalkerSlots");
             var original = GameObject.Find("/HUD/WorkshopPanel/Content/RecipesPanel/Slots/RecipeSlot/Prio");
             Copy(original, result, "Plus");
