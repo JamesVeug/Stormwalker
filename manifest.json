@@ -1,0 +1,8 @@
+﻿{
+  "name": "Stormwalker",
+  "version_number": "0.7",
+  "website_url": "https://github.com/JamesVeug/Stormwalker",
+  "description": "An Against the Storm Tweakpack",
+  "dependencies": ["BepInEx-BepInExPack-5.4.2100"]
+}
+

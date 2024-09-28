@@ -25,7 +25,7 @@ namespace Stormwalker {
             houseLimiter = residentSlider.AddComponent<HouseLimiter>();
             houseLimiter.SetUp();
 
-            //Minsize for panel so the new slider wont fall outside of it.
+            // Minsize for panel so the new slider won't fall outside of it.
             go.GetComponent<SimpleVerticalResizer>().minHeight = 200;
 
         }
@@ -132,8 +132,19 @@ namespace Stormwalker {
             }
         }
 
-        public int GetAllowedResidents(House house) => Math.Min(house.GetHousingPlaces(), slotsPerHouse.GetValueOrDefault(house.Id, 10));
+        public int GetAllowedResidents(House house)
+        {
+            if (!slotsPerHouse.TryGetValue(house.Id, out int v))
+            {
+                v = 10;
+            }
+            
+            return Math.Min(house.GetHousingPlaces(), v);
+        }
 
-        public void Remove(House house) => slotsPerHouse.Remove(house.Id);
+        public void Remove(House house)
+        {
+            slotsPerHouse.Remove(house.Id);
+        }
     }
 }

@@ -20,6 +20,7 @@ using Eremite.View.HUD.Woodcutters;
 
 namespace Stormwalker
 {
+    [HarmonyPatch]
     internal static class Patches{
 
         [HarmonyPatch(typeof(GameLoader), nameof(GameLoader.LoadState))]
@@ -63,7 +64,10 @@ namespace Stormwalker
 
         [HarmonyPatch(typeof(ProductionBuilding), nameof(ProductionBuilding.DispatchProductionFinished))]
         [HarmonyPostfix]
-        private static void UnassignSinceDone(ProductionState production) => WorkerSlotPatches.TryUnassign(production);
+        private static void UnassignSinceDone(ProductionState production)
+        {
+            WorkerSlotPatches.TryUnassign(production);
+        }
 
         [HarmonyPatch(typeof(BuildingProductionSlot), nameof(BuildingProductionSlot.SetStatus))]
         [HarmonyPrefix]

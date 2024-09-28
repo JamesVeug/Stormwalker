@@ -2,98 +2,120 @@
 using BepInEx;
 using BepInEx.Configuration;
 using Eremite;
-using Eremite.Buildings.UI;
 using Eremite.Controller;
-using Eremite.MapObjects;
 using Eremite.Services;
-using Eremite.View.Cameras;
 using Eremite.View.HUD.Construction;
 using HarmonyLib;
 using UniRx;
 using UnityEngine;
-using UnityEngine.UIElements;
 
-namespace Stormwalker
+namespace Stormwalker;
+
+[BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+public class Plugin : BaseUnityPlugin
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
-    public class Plugin : BaseUnityPlugin
+    public static readonly float SUPER_SPEED_SCALE = 5f;
+    
+    public static void Log(object obj) => Instance.Logger.LogInfo(obj);
+    public static void Error(object obj) => Instance.Logger.LogError(obj);
+    public static PluginState State { get; private set; } = new();
+        
+    public static Plugin Instance;
+    public static BuildingsPanel buildingPanel = null;
+
+    private Harmony harmony;
+    private Vector2? zoomLimit = null;
+
+    private void Awake()
     {
-        public static readonly float SUPER_SPEED_SCALE = 5f;
-        private Harmony harmony;
-        public static Plugin Instance;
-        public static void Log(object obj) => Instance.Logger.LogInfo(obj);
-        public static void Error(object obj) => Instance.Logger.LogError(obj);
+        Logger.LogInfo($"Loading Plugin {PluginInfo.PLUGIN_GUID}...");
+        Instance = this;
+        harmony = Harmony.CreateAndPatchAll(typeof(Patches).Assembly);
 
-        public static PluginState State {get; private set;} = new();
+        InputConfigs.RegisterKey("Zoom Overview", Configs.Zoom_Toggle, ZoomToggled);
+        InputConfigs.RegisterKey("Super Speed", [KeyCode.Alpha5], SuperSpeedToggled);
 
-        public static BuildingsPanel buildingPanel = null;
+        gameObject.AddComponent<Woodcutters>();
+        gameObject.AddComponent<BuildingCopier>();
+        
+        // Stops Unity from destroying it for some reason. Same as Setting the BepInEx config HideManagerGameObject to true.
+        gameObject.hideFlags = HideFlags.HideAndDontSave;
+        
+        Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+    }
 
-        KeyboardShortcut zoomOverviewKey;
-        KeyboardShortcut superSpeed;
-
-        private void Awake()
+    public static void SetupState(bool noGameState)
+    {
+        if (noGameState || MB.GameSaveService.IsNewGame())
         {
-            Instance = this;
-            Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
-            harmony = Harmony.CreateAndPatchAll(typeof(Patches));
-
-            zoomOverviewKey = new(UnityEngine.KeyCode.Backspace);
-            superSpeed = new(UnityEngine.KeyCode.Alpha5);
-
-            this.gameObject.AddComponent<Woodcutters>();
-            this.gameObject.AddComponent<BuildingCopier>();
+            State = new();
         }
-
-        public static void SetupState(bool noGameState){
-            if(noGameState || MB.GameSaveService.IsNewGame()){
-                State = new();
-            } else {
-                State = Load();
-            }
-            MB.GameSaveService.IsSaving.Where(isStarting=>!isStarting).Subscribe(_=>Save());
-        }
-
-        private static void Save(){
-            var path = Path.Combine(Serviceable.ProfilesService.GetFolderPath(), PluginInfo.PLUGIN_GUID+".save");
-            JsonIO.SaveToFile(State, path);
-        }
-
-        private static PluginState Load(){
-            var path = Path.Combine(Serviceable.ProfilesService.GetFolderPath(), PluginInfo.PLUGIN_GUID+".save");
-            try {
-                return JsonIO.GetFromFile<PluginState>(path);
-            } catch {
-                Plugin.Error("Error while trying to load save state");
-                return new();
-            }
-        }
-
-        Vector2 zoomLimit = new Vector2(-20f, -8f);
-
-        private void Update(){
-            if(!GameController.IsGameActive || MB.InputService.IsLocked()) 
-                return;
-
-            if(zoomOverviewKey.IsDown()){
-                var zoom = -60f;
-                var cam = GameController.Instance.CameraController;
-                var animator = cam.Camera.GetComponentInChildren<PostProcessesAnimator>();
-                if(cam.zoomLimit.x == zoom && cam.zoomLimit.y == zoom){ // Zoom back to normal
-                    cam.zoomLimit = zoomLimit;
-                    //if(animator != null) animator.AdjustDeapthOfField(MB.ClientPrefsService.DeapthOfField.Value);
-                } else { // Zoom out
-                    zoomLimit = cam.zoomLimit;
-                    cam.zoomLimit = new Vector2(zoom, zoom);
-                    //if(animator != null) animator.AdjustDeapthOfField(isOn: false);
-                }
-            } else if(superSpeed.IsDown()){
-                GameMB.TimeScaleService.Change(SUPER_SPEED_SCALE, true, false);
-            }
-        }
-
-        private void OnDestroy()
+        else
         {
-            harmony.UnpatchSelf();
+            State = Load();
         }
+
+        MB.GameSaveService.IsSaving.Where(isStarting => !isStarting).Subscribe(_ => Save());
+    }
+
+    private static void Save()
+    {
+        var path = Path.Combine(Application.persistentDataPath, "Stormwalker.save");
+        Log($"Saving state to {path}");
+        JsonIO.SaveToFile(State, path);
+    }
+
+    private static PluginState Load()
+    {
+        var path = Path.Combine(Application.persistentDataPath, "Stormwalker.save");
+        if (!File.Exists(path))
+        {
+            Log("No save state found, creating new one!");
+            return new PluginState();
+        }
+        
+        try
+        {
+            PluginState pluginState = JsonIO.GetFromFile<PluginState>(path);
+            Log($"Loaded state from {path}");
+            return pluginState;
+        }
+        catch
+        {
+            Error("Error while trying to load save state from " + path);
+            return new();
+        }
+    }
+
+    private static void SuperSpeedToggled()
+    {
+        GameMB.TimeScaleService.Change(SUPER_SPEED_SCALE, true, false);
+    }
+
+    private void ZoomToggled()
+    {
+        if (!zoomLimit.HasValue)
+        {
+            zoomLimit = GameController.Instance.CameraController.zoomLimit;
+        }
+            
+        var zoom = Configs.ZoomLimit;
+        var cam = GameController.Instance.CameraController;
+        if (cam.zoomLimit.x == zoom && cam.zoomLimit.y == zoom)
+        {
+            // Zoom back to normal
+            cam.zoomLimit = zoomLimit.Value;
+        }
+        else
+        {
+            // Zoom out
+            zoomLimit = cam.zoomLimit;
+            cam.zoomLimit = new Vector2(zoom, zoom);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        harmony.UnpatchSelf();
     }
 }

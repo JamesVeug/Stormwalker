@@ -1,11 +1,8 @@
 using System.Collections.Generic;
-using System.ComponentModel;
 using Eremite;
 using Eremite.Buildings;
 using Eremite.Buildings.UI;
 using Eremite.Characters.Villagers;
-using Eremite.Services.Analytics;
-using Eremite.View.HUD;
 using UnityEngine;
 using UnityEngine.UI;
 
