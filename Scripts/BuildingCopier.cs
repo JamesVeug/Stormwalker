@@ -3,7 +3,6 @@ using Eremite;
 using Eremite.Buildings;
 using Eremite.Buildings.UI;
 using Eremite.MapObjects;
-using Eremite.Services;
 using Eremite.View;
 
 namespace Stormwalker {
@@ -20,8 +19,8 @@ namespace Stormwalker {
             if (!InputService.WasTriggered(MB.InputConfig.CopyBuilding, false))
                 return;
 
-            var mapObject = GameInputService.MouseoverObject.Value;
-            Plugin.Log(mapObject);
+            IMapObject mapObject = GameInputService.MouseoverObject.Value;
+            Plugin.Log(mapObject.ToString() + " [" + mapObject.GetType().Name + "]");
             switch(mapObject){
                 case ResourceDeposit deposit:
                     if(deposit.State.isAvailable && DepositsService.HutsMatrix.ContainsKey(deposit.Model)){
@@ -43,6 +42,12 @@ namespace Stormwalker {
                             if(BuildConditional(building)) break;
                         }
                     }
+                    break;
+                case Lake lake when lake.State.isAvailable:
+                    BuildConditional(Settings.GetBuilding("Fishing Hut"));
+                    break;
+                case Ore ore:
+                    BuildConditional(Settings.GetBuilding("Mine"));
                     break;
             }
         }
