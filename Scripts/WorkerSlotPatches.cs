@@ -17,7 +17,10 @@ namespace Stormwalker {
         public static void PutMarkerIn(BuildingWorkerSlot slot){
             var statusIcon = slot.transform.Find("StatusIcon")?.gameObject;
             if(statusIcon.transform.Find(MARKER_NAME) != null)
+            {
                 return;
+            }
+
             var go = Utils.MakeGameObject(statusIcon, MARKER_NAME, true);
             go.SetActive(false);
             go.transform.localPosition = new Vector3(-10, 10, 0);
@@ -32,7 +35,7 @@ namespace Stormwalker {
 
         public static void QueueToggleUnassign(BuildingWorkerSlot slot){
             PutMarkerIn(slot);
-            if(!toUnassign.Remove(slot.actor.Id)){
+            if (!toUnassign.Remove(slot.actor.Id)){
                 toUnassign.Add(slot.actor.Id);
             }
         }
@@ -52,8 +55,9 @@ namespace Stormwalker {
         
         public static bool UpdateMarkerStatus(WorkerStatusSlot slot){
             var go = slot.transform.Find($"StatusIcon/{MARKER_NAME}");
-            if(go == null)
+            if(go == null || slot.actor == null)
                 return false;
+            
             bool result = toUnassign.Contains(slot.actor.Id);
             go.SetActive(result);
             return result;

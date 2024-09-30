@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using ATS_API;
 using BepInEx;
 using Eremite;
 using Eremite.Controller;
@@ -17,6 +18,7 @@ public class Plugin : BaseUnityPlugin
     public static readonly float SUPER_SPEED_SCALE = 5f;
     
     public static void Log(object obj) => Instance.Logger.LogInfo(obj);
+    public static void Warning(object obj) => Instance.Logger.LogWarning(obj);
     public static void Error(object obj) => Instance.Logger.LogError(obj);
     public static PluginState State { get; private set; } = new();
         
@@ -30,10 +32,9 @@ public class Plugin : BaseUnityPlugin
     {
         Logger.LogInfo($"Loading Plugin {PluginInfo.PLUGIN_GUID}...");
         Instance = this;
-        harmony = Harmony.CreateAndPatchAll(typeof(Patches).Assembly);
+        harmony = Harmony.CreateAndPatchAll(typeof(Patches).Assembly, PluginInfo.PLUGIN_GUID);
 
-        InputConfigs.RegisterKey("Stormwalker", "zoom", "Zoom Overview", Configs.Zoom_Toggle, ZoomToggled);
-        InputConfigs.RegisterKey("Stormwalker", "5X", "5X Speed", [KeyCode.Alpha5], SuperSpeedToggled);
+        Configs.Initialize();
         Hotkeys.RegisterKey("Stormwalker", "zoom", "Zoom Overview", [KeyCode.Backspace], ZoomToggled);
         Hotkeys.RegisterKey("Stormwalker", "5X", "5X Speed", [KeyCode.Alpha5], SuperSpeedToggled);
 
