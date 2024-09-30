@@ -1,9 +1,11 @@
 using System;
+using ATS_API;
 using Eremite;
 using Eremite.Buildings;
 using Eremite.Characters;
 using Eremite.Model.State;
 using Eremite.View.HUD.Woodcutters;
+using UnityEngine;
 
 namespace Stormwalker;
 
@@ -13,21 +15,21 @@ public class Woodcutters : GameMB {
 
     private void Awake()
     {
-        InputConfigs.RegisterKey("Stormwalker", "assign1", "Assign one Villager", Configs.Woodcutters_AssignOne, (ctx)=>
+        Hotkeys.RegisterKey("Stormwalker", "assign1", "Assign one Villager", [KeyCode.LeftControl,KeyCode.X], (ctx)=>
         {
             if (ctx.performed)
             {
                 woodcuttersHUD.OnRightClick();
             }
         });
-        InputConfigs.RegisterKey("Stormwalker", "unassignAll", "Unassign all Villagers", Configs.Woodcutters_UnassignAll, (ctx)=>
+        Hotkeys.RegisterKey("Stormwalker", "unassignAll", "Unassign all Villagers", [KeyCode.LeftShift,KeyCode.X], (ctx)=>
         {
             if (ctx.performed)
             {
                 woodcuttersHUD.OnClick();
             }
         });
-        InputConfigs.RegisterKey("Stormwalker", "balanceHostility", "Unassign Villagers to lower Hostility", Configs.Woodcutters_BalanceHostility, (ctx)=>
+        Hotkeys.RegisterKey("Stormwalker", "balanceHostility", "Unassign Villagers to lower Hostility", [KeyCode.LeftAlt,KeyCode.X], (ctx)=>
         {
             if (ctx.performed)
             {

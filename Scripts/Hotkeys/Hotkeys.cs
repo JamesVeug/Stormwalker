@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
+using Stormwalker;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Stormwalker;
+namespace ATS_API;
 
 [HarmonyPatch]
-public static partial class InputConfigs
+public static partial class Hotkeys
 {
     public class Hotkey
     {
@@ -24,6 +25,7 @@ public static partial class InputConfigs
     private static Dictionary<string, InputActionMap> modNameToActionMaps = new Dictionary<string, InputActionMap>();
     private static Dictionary<string, Hotkey> modNameActionNameToAddedHotkey = new Dictionary<string, Hotkey>();
     private static HashSet<InputAction> activeActions = new HashSet<InputAction>();
+    private static HashSet<string> activeActionMaps = new HashSet<string>();
 
     public static void Update()
     {
@@ -35,13 +37,15 @@ public static partial class InputConfigs
         MasterInputAsset.Disable();
         foreach (KeyValuePair<string, List<Hotkey>> pair in pendingHotkeys)
         {
+            activeActionMaps.Add(pair.Key);
             InputActionMap map = MasterInputAsset.FindActionMap(pair.Key);
             if (map == null)
             {
                 map = new InputActionMap(pair.Key);
                 MasterInputAsset.AddActionMap(map);
-                modNameToActionMaps[pair.Key] = map;
             }
+            modNameToActionMaps[pair.Key] = map;
+            LogInfo($"Adding action map {pair.Key} with {pair.Value.Count} hotkeys.");
             
             foreach (Hotkey hotkey in pair.Value)
             {
@@ -54,7 +58,7 @@ public static partial class InputConfigs
     
     public static void RegisterKey(string modName, Hotkey hotkey)
     {
-        Plugin.Log($"Registering key {hotkey.keyName} with code {string.Join(",", hotkey.codes)}");
+        LogInfo($"Registering key {hotkey.keyName} with code {string.Join(",", hotkey.codes)}");
         if(!pendingHotkeys.TryGetValue(modName, out var hotkeys))
         {
             hotkeys = new List<Hotkey>();
@@ -62,6 +66,32 @@ public static partial class InputConfigs
         }
             
         hotkeys.Add(hotkey);
+    }
+
+    public static void RegisterKey(string modName, string keyName, string displayName, List<KeyCode> codes, Action onPress = null, Action onRelease = null)
+    {
+        Action<InputAction.CallbackContext> callback = null;
+        if (onPress != null || onRelease != null)
+        {
+            callback = ctx =>
+            {
+                if (ctx.performed)
+                {
+                    onPress?.Invoke();
+                }
+                else if (ctx.canceled)
+                {
+                    onRelease?.Invoke();
+                }
+            };
+        }
+        
+        var item = new Hotkey();
+        item.keyName = keyName;
+        item.displayName = displayName;
+        item.codes = KeyCodesToString(codes);
+        item.onCallback = callback;
+        RegisterKey(modName, item);
     }
 
     public static void RegisterKey(string modName, string keyName, string displayName, List<KeyCode> codes, Action<InputAction.CallbackContext> callback = null)
@@ -76,7 +106,7 @@ public static partial class InputConfigs
 
     private static void AddHotkey(string modName, InputActionMap actionMap, Hotkey hotkey)
     {
-        Plugin.Log($"Adding hotkey {hotkey.keyName} with code {string.Join(",", hotkey.codes)}");
+        LogInfo($"Adding hotkey {hotkey.keyName} with code {string.Join(",", hotkey.codes)}");
         List<string> codes = hotkey.codes;
         string keyName = hotkey.keyName;
         Action<InputAction.CallbackContext> callback = hotkey.onCallback;
@@ -111,7 +141,7 @@ public static partial class InputConfigs
             }
             else
             {
-                Plugin.Error("More than 3 key codes are not supported.");
+                LogError("More than 3 key codes are not supported.");
                 return;
             }
         }
@@ -130,17 +160,17 @@ public static partial class InputConfigs
     {
         action.performed += ctx =>
         {
-            Plugin.Log($"{keyName} action performed!");
+            LogInfo($"{keyName} action performed!");
             callback.Invoke(ctx);
         };
         action.canceled += ctx =>
         {
-            Plugin.Log($"{keyName} action canceled!");
+            LogInfo($"{keyName} action canceled!");
             callback.Invoke(ctx);
         };
         action.started += ctx =>
         {
-            Plugin.Log($"{keyName} action started!");
+            LogInfo($"{keyName} action started!");
             callback.Invoke(ctx);
         };
     }
@@ -273,4 +303,19 @@ public static partial class InputConfigs
         { KeyCode.Alpha9, "<Keyboard>/9" },
         { KeyCode.Alpha0, "<Keyboard>/0" }
     };
+    
+    private static void LogError(string message)
+    {
+        Plugin.Error(message);
+    }
+    
+    private static void LogInfo(string message)
+    {
+        Plugin.Log(message);
+    }
+    
+    private static void LogWarning(string message)
+    {
+        Plugin.Warning(message);
+    }
 }

@@ -34,6 +34,8 @@ public class Plugin : BaseUnityPlugin
 
         InputConfigs.RegisterKey("Stormwalker", "zoom", "Zoom Overview", Configs.Zoom_Toggle, ZoomToggled);
         InputConfigs.RegisterKey("Stormwalker", "5X", "5X Speed", [KeyCode.Alpha5], SuperSpeedToggled);
+        Hotkeys.RegisterKey("Stormwalker", "zoom", "Zoom Overview", [KeyCode.Backspace], ZoomToggled);
+        Hotkeys.RegisterKey("Stormwalker", "5X", "5X Speed", [KeyCode.Alpha5], SuperSpeedToggled);
 
         gameObject.AddComponent<Woodcutters>();
         gameObject.AddComponent<BuildingCopier>();
@@ -42,6 +44,11 @@ public class Plugin : BaseUnityPlugin
         gameObject.hideFlags = HideFlags.HideAndDontSave;
         
         Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+    }
+
+    private void Update()
+    {
+        Hotkeys.Update();
     }
 
     public static void SetupState(bool noGameState)
@@ -56,11 +63,6 @@ public class Plugin : BaseUnityPlugin
         }
 
         MB.GameSaveService.IsSaving.Where(isStarting => !isStarting).Subscribe(_ => Save());
-    }
-
-    private void Update()
-    {
-        InputConfigs.Update();
     }
 
     private static void Save()

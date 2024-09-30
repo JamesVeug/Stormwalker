@@ -10,30 +10,35 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Stormwalker;
+namespace ATS_API;
 
-public static partial class InputConfigs
+public static partial class Hotkeys
 {
     [HarmonyPatch(typeof(KeyBindingsPanel), nameof(KeyBindingsPanel.OnEnable))]
     [HarmonyPrefix]
     public static void KeyBindingsPanel_Start_Postfix(KeyBindingsPanel __instance)
     {
-        ModdedKeyboardSlots[] allChildren = __instance.GetComponentsInChildren<ModdedKeyboardSlots>();
+        ModdedKeyboardSlots[] allChildren = __instance.GetComponentsInChildren<ModdedKeyboardSlots>(true);
 
 
         foreach (KeyValuePair<string, InputActionMap> pair in modNameToActionMaps)
         {
-            InputActionMap actionMap = MasterInputAsset.FindActionMap(pair.Key);
-            if (actionMap == null)
+            if (!activeActionMaps.Contains(pair.Key))
             {
-                Plugin.Log($"Action map is null for modName {pair.Key}, skipping.");
+                continue;
+            }
+            
+            InputActionMap actionMap = MasterInputAsset.FindActionMap(pair.Key);
+            if (actionMap == null || actionMap.actions.Count == 0)
+            {
+                LogInfo($"Action map is null for modName {pair.Key}, skipping.");
                 continue;
             }
 
             ModdedKeyboardSlots children = allChildren.FirstOrDefault(a => a.ModName == pair.Key);
             if (children == null)
             {
-                Plugin.Log("Slots are null, creating new slots.");
+                LogInfo($"Slots are null for {actionMap.name}, creating new slots.");
                 Transform parent = __instance.slots[0].transform.parent;
                 Transform clone = GameObject.Instantiate(parent, parent.parent);
                 clone.gameObject.name = "Modded";
@@ -46,11 +51,11 @@ public static partial class InputConfigs
                 GameObject.Destroy(header.GetComponent<TextFontFeaturesHelper>());
                 headerText.text = pair.Key;
 
-                Plugin.Log($"Slots created for {pair.Key} with {actionMap.actions.Count} actions.");
+                LogInfo($"Slots created for {pair.Key} with {actionMap.actions.Count} actions.");
             }
             else
             {
-                Plugin.Log("Slots are already set up.");
+                LogInfo("Slots are already set up.");
             }
         }
     }
@@ -59,22 +64,26 @@ public static partial class InputConfigs
     [HarmonyPostfix]
     public static void KeyBindingsPanel_SetUpSlots_Postfix(KeyBindingsPanel __instance)
     {
+        LogInfo($"Setting up slots.");
+        ModdedKeyboardSlots[] slots = __instance.GetComponentsInChildren<ModdedKeyboardSlots>(true);
         foreach (KeyValuePair<string, InputActionMap> pair in modNameToActionMaps)
         {
-            InputActionMap actionMap = InputConfigs.MasterInputAsset.FindActionMap(pair.Key);
+            InputActionMap actionMap = MasterInputAsset.FindActionMap(pair.Key);
             if (actionMap == null)
             {
-                Plugin.Log($"Action map is null for mod {pair.Key}, skipping.");
+                LogInfo($"Action map is null for mod {pair.Key}, skipping.");
                 continue;
             }
 
-            ModdedKeyboardSlots moddedKeyboard = __instance.GetComponentInChildren<ModdedKeyboardSlots>();
+            ModdedKeyboardSlots moddedKeyboard = slots.FirstOrDefault(a=>a.ModName == pair.Key);
             if (moddedKeyboard == null)
             {
-                Plugin.Log($"Modded keyboard is null for {pair.Key}, returning.");
-                return;
+                LogInfo($"Modded keyboard is null for {pair.Key}, returning.");
+                continue;
             }
 
+            
+            LogInfo($"Setting up keyboard slots for {pair.Key} with {actionMap.actions.Count} actions.");
             moddedKeyboard.SetupKeyboardSlots(actionMap, __instance);
         }
     }
@@ -83,11 +92,14 @@ public static partial class InputConfigs
     [HarmonyPostfix]
     private static void KeyBindingsPanel_ResetCounter(KeyBindingsPanel __instance)
     {
-        Plugin.Log($"Reset counter.");
-        ModdedKeyboardSlots keyboardSlots = __instance.GetComponentInChildren<ModdedKeyboardSlots>();
+        LogInfo($"Reset counter.");
+        ModdedKeyboardSlots[] keyboardSlots = __instance.GetComponentsInChildren<ModdedKeyboardSlots>(true);
         if (keyboardSlots != null)
         {
-            keyboardSlots.ResetCounter();
+            foreach (ModdedKeyboardSlots keyboardSlot in keyboardSlots)
+            {
+                keyboardSlot.ResetCounter();
+            }
         }
     }
 
@@ -95,7 +107,7 @@ public static partial class InputConfigs
     [HarmonyPostfix]
     private static void HookMainControllerSetup(InputConfig __instance)
     {
-        Plugin.Log($"Setting up custom action map.");
+        LogInfo($"Setting up custom action map.");
         MasterInputAsset = __instance.asset;
     }
 
