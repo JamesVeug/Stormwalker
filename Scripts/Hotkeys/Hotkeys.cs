@@ -17,6 +17,8 @@ public static partial class Hotkeys
         public string displayName;
         public List<string> codes;
         public Action<InputAction.CallbackContext> onCallback;
+        
+        public InputAction action;
     }
 
     public static InputActionAsset MasterInputAsset;
@@ -27,6 +29,16 @@ public static partial class Hotkeys
     private static HashSet<InputAction> activeActions = new HashSet<InputAction>();
     private static HashSet<string> activeActionMaps = new HashSet<string>();
 
+    public static InputAction GetHotkeyAction(string modName, string actionName)
+    {
+        if (modNameToActionMaps.TryGetValue(modName, out var actionMap))
+        {
+            return actionMap.FindAction(actionName);
+        }
+
+        return null;
+    }
+    
     public static void Update()
     {
         if (MasterInputAsset == null || pendingHotkeys.Count == 0)
@@ -45,7 +57,6 @@ public static partial class Hotkeys
                 MasterInputAsset.AddActionMap(map);
             }
             modNameToActionMaps[pair.Key] = map;
-            LogInfo($"Adding action map {pair.Key} with {pair.Value.Count} hotkeys.");
             
             foreach (Hotkey hotkey in pair.Value)
             {
@@ -56,19 +67,7 @@ public static partial class Hotkeys
         MasterInputAsset.Enable();
     }
     
-    public static void RegisterKey(string modName, Hotkey hotkey)
-    {
-        LogInfo($"Registering key {hotkey.keyName} with code {string.Join(",", hotkey.codes)}");
-        if(!pendingHotkeys.TryGetValue(modName, out var hotkeys))
-        {
-            hotkeys = new List<Hotkey>();
-            pendingHotkeys.Add(modName, hotkeys);
-        }
-            
-        hotkeys.Add(hotkey);
-    }
-
-    public static void RegisterKey(string modName, string keyName, string displayName, List<KeyCode> codes, Action onPress = null, Action onRelease = null)
+    public static Hotkey New(string guid, string keyName, string displayName, List<KeyCode> codes, Action onPress = null, Action onRelease = null)
     {
         Action<InputAction.CallbackContext> callback = null;
         if (onPress != null || onRelease != null)
@@ -85,28 +84,43 @@ public static partial class Hotkeys
                 }
             };
         }
-        
-        var item = new Hotkey();
-        item.keyName = keyName;
-        item.displayName = displayName;
-        item.codes = KeyCodesToString(codes);
-        item.onCallback = callback;
-        RegisterKey(modName, item);
+
+        var hotkey = new Hotkey();
+        hotkey.keyName = keyName;
+        hotkey.displayName = displayName;
+        hotkey.codes = KeyCodesToString(codes);
+        hotkey.onCallback = callback;
+        return Add(guid, hotkey);
     }
 
-    public static void RegisterKey(string modName, string keyName, string displayName, List<KeyCode> codes, Action<InputAction.CallbackContext> callback = null)
+    public static Hotkey New(string modName, string keyName, string displayName, List<KeyCode> codes, Action<InputAction.CallbackContext> callback = null)
     {
         var item = new Hotkey();
         item.keyName = keyName;
         item.displayName = displayName;
         item.codes = KeyCodesToString(codes);
         item.onCallback = callback;
-        RegisterKey(modName, item);
+        Add(modName, item);
+        
+        return item;
+    }
+    
+    public static Hotkey Add(string modName, Hotkey hotkey)
+    {
+        LogInfo($"Registering key {hotkey.keyName} with code {string.Join(",", hotkey.codes)}");
+        if(!pendingHotkeys.TryGetValue(modName, out var hotkeys))
+        {
+            hotkeys = new List<Hotkey>();
+            pendingHotkeys.Add(modName, hotkeys);
+        }
+            
+        hotkeys.Add(hotkey);
+        return hotkey;
     }
 
     private static void AddHotkey(string modName, InputActionMap actionMap, Hotkey hotkey)
     {
-        LogInfo($"Adding hotkey {hotkey.keyName} with code {string.Join(",", hotkey.codes)}");
+        // LogInfo($"Adding hotkey {hotkey.keyName} with code {string.Join(",", hotkey.codes)}");
         List<string> codes = hotkey.codes;
         string keyName = hotkey.keyName;
         Action<InputAction.CallbackContext> callback = hotkey.onCallback;
@@ -153,6 +167,7 @@ public static partial class Hotkeys
             CallbackAction(action, keyName, callback);
         }
         
+        hotkey.action = action;
         activeActions.Add(action);
     }
 

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Eremite.View.Popups.GameMenu;
 using HarmonyLib;
-using Stormwalker;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -27,16 +26,13 @@ public class ModdedKeyboardSlots :MonoBehaviour
 
     public void SetupKeyboardSlots(InputActionMap actionMap, KeyBindingsPanel panel)
     {
-        Plugin.Log($"Setting up keyboard slots for {ModName}.");
         foreach (InputAction action in actionMap.actions)
         {
             if (!Hotkeys.IsActionActive(action))
             {
-                Plugin.Log($"Skipping action {action.name} because it's not active.");
                 continue;
             }
             
-            Plugin.Log($"Setting up action {action.name} for {ModName}.");
             KeyBindingSlot slot = panel.GetOrCreate(slots, usedSlots++);
             slot.SetUp(action, panel.OnChangeRequested);
         }

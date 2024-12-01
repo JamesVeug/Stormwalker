@@ -15,21 +15,21 @@ public class Woodcutters : GameMB {
 
     private void Awake()
     {
-        Hotkeys.RegisterKey("Stormwalker", "assign1", "Assign one Villager", [KeyCode.LeftControl,KeyCode.X], (ctx)=>
+        Hotkeys.New("Stormwalker", "assign1", "Assign one Woodcutter", Configs.Woodcutters_AssignOne, (ctx)=>
         {
             if (ctx.performed)
             {
                 woodcuttersHUD.OnRightClick();
             }
         });
-        Hotkeys.RegisterKey("Stormwalker", "unassignAll", "Unassign all Villagers", [KeyCode.LeftShift,KeyCode.X], (ctx)=>
+        Hotkeys.New("Stormwalker", "unassignAll", "Unassign all Woodcutters", Configs.Woodcutters_UnassignAll, (ctx)=>
         {
             if (ctx.performed)
             {
                 woodcuttersHUD.OnClick();
             }
         });
-        Hotkeys.RegisterKey("Stormwalker", "balanceHostility", "Unassign Villagers to lower Hostility", [KeyCode.LeftAlt,KeyCode.X], (ctx)=>
+        Hotkeys.New("Stormwalker", "balanceHostility", "Unassign Woodcutters to lower Hostility", Configs.Woodcutters_BalanceHostility, (ctx)=>
         {
             if (ctx.performed)
             {

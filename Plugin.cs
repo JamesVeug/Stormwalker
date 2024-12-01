@@ -35,8 +35,8 @@ public class Plugin : BaseUnityPlugin
         harmony = Harmony.CreateAndPatchAll(typeof(Patches).Assembly, PluginInfo.PLUGIN_GUID);
 
         Configs.Initialize();
-        Hotkeys.RegisterKey("Stormwalker", "zoom", "Zoom Overview", [KeyCode.Backspace], ZoomToggled);
-        Hotkeys.RegisterKey("Stormwalker", "5X", "5X Speed", [KeyCode.Alpha5], SuperSpeedToggled);
+        Hotkeys.New("Stormwalker", "zoom", "Zoom Overview", Configs.Zoom_Toggle, ZoomToggled);
+        Hotkeys.New("Stormwalker", "5X", "5X Speed", [KeyCode.Alpha5], SuperSpeedToggled);
 
         gameObject.AddComponent<Woodcutters>();
         gameObject.AddComponent<BuildingCopier>();

@@ -31,14 +31,13 @@ public static partial class Hotkeys
             InputActionMap actionMap = MasterInputAsset.FindActionMap(pair.Key);
             if (actionMap == null || actionMap.actions.Count == 0)
             {
-                LogInfo($"Action map is null for modName {pair.Key}, skipping.");
                 continue;
             }
 
             ModdedKeyboardSlots children = allChildren.FirstOrDefault(a => a.ModName == pair.Key);
             if (children == null)
             {
-                LogInfo($"Slots are null for {actionMap.name}, creating new slots.");
+                // LogInfo($"Slots are null for {actionMap.name}, creating new slots.");
                 Transform parent = __instance.slots[0].transform.parent;
                 Transform clone = GameObject.Instantiate(parent, parent.parent);
                 clone.gameObject.name = "Modded";
@@ -51,11 +50,7 @@ public static partial class Hotkeys
                 GameObject.Destroy(header.GetComponent<TextFontFeaturesHelper>());
                 headerText.text = pair.Key;
 
-                LogInfo($"Slots created for {pair.Key} with {actionMap.actions.Count} actions.");
-            }
-            else
-            {
-                LogInfo("Slots are already set up.");
+                // LogInfo($"Slots created for {pair.Key} with {actionMap.actions.Count} actions.");
             }
         }
     }
@@ -64,26 +59,23 @@ public static partial class Hotkeys
     [HarmonyPostfix]
     public static void KeyBindingsPanel_SetUpSlots_Postfix(KeyBindingsPanel __instance)
     {
-        LogInfo($"Setting up slots.");
         ModdedKeyboardSlots[] slots = __instance.GetComponentsInChildren<ModdedKeyboardSlots>(true);
         foreach (KeyValuePair<string, InputActionMap> pair in modNameToActionMaps)
         {
             InputActionMap actionMap = MasterInputAsset.FindActionMap(pair.Key);
             if (actionMap == null)
             {
-                LogInfo($"Action map is null for mod {pair.Key}, skipping.");
+                // LogInfo($"Action map is null for mod {pair.Key}, skipping.");
                 continue;
             }
 
             ModdedKeyboardSlots moddedKeyboard = slots.FirstOrDefault(a=>a.ModName == pair.Key);
             if (moddedKeyboard == null)
             {
-                LogInfo($"Modded keyboard is null for {pair.Key}, returning.");
+                // LogInfo($"Modded keyboard is null for {pair.Key}, returning.");
                 continue;
             }
 
-            
-            LogInfo($"Setting up keyboard slots for {pair.Key} with {actionMap.actions.Count} actions.");
             moddedKeyboard.SetupKeyboardSlots(actionMap, __instance);
         }
     }
@@ -92,7 +84,6 @@ public static partial class Hotkeys
     [HarmonyPostfix]
     private static void KeyBindingsPanel_ResetCounter(KeyBindingsPanel __instance)
     {
-        LogInfo($"Reset counter.");
         ModdedKeyboardSlots[] keyboardSlots = __instance.GetComponentsInChildren<ModdedKeyboardSlots>(true);
         if (keyboardSlots != null)
         {
@@ -107,7 +98,6 @@ public static partial class Hotkeys
     [HarmonyPostfix]
     private static void HookMainControllerSetup(InputConfig __instance)
     {
-        LogInfo($"Setting up custom action map.");
         MasterInputAsset = __instance.asset;
     }
 
