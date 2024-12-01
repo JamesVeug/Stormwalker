@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Stormwalker</AssemblyName>
     <Description>An Against the Storm Tweakpack</Description>
-    <Version>0.7</Version>
+    <Version>0.8.1</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <StormPath>C:\Program Files (x86)\Steam\steamapps\common\Against the Storm</StormPath>
@@ -87,6 +87,7 @@
 		<!-- Create a folder with all the .dlls and files to easily uplaod to thunderstore -->
 		<Copy SourceFiles="@(Assembly)" DestinationFolder="$(OutputPath)\ThunderStore\" />
 		<Copy SourceFiles="README.md" DestinationFolder="$(OutputPath)\ThunderStore\" />
+		<Copy SourceFiles="CHANGELOG.md" DestinationFolder="$(OutputPath)\ThunderStore\" />
 		<Copy SourceFiles="manifest.json" DestinationFolder="$(OutputPath)\ThunderStore\" />
 		<Copy SourceFiles="icon.png" DestinationFolder="$(OutputPath)\ThunderStore\" />
 
@@ -97,6 +98,7 @@
 		<!-- Create a thunderstore folders to AgainstTheStorm game folder -->
 		<Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(BepInExPath)\plugins\StormwalkerDevs-Stormwalker\%(RecursiveDir)" />
 		<Copy SourceFiles="README.md" DestinationFolder="$(BepInExPath)\plugins\StormwalkerDevs-Stormwalker\" />
+		<Copy SourceFiles="CHANGELOG.md" DestinationFolder="$(BepInExPath)\plugins\StormwalkerDevs-Stormwalker\" />
 		<Copy SourceFiles="manifest.json" DestinationFolder="$(BepInExPath)\plugins\StormwalkerDevs-Stormwalker\" />
 		<Copy SourceFiles="icon.png" DestinationFolder="$(BepInExPath)\plugins\StormwalkerDevs-Stormwalker\" />
 		<Copy SourceFiles="@(Assembly)" DestinationFolder="$(BepInExPath)\plugins\StormwalkerDevs-Stormwalker\" />

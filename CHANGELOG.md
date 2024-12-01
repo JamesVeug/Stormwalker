@@ -1,4 +1,25 @@
-# 0.7
+# 0.8.1
+## Fixes
+- Works with ATS 1.5.5R
+- Fixed shift on Lakes not selecting Small Fishing Hut
+- Change hotkeys to avoid errors when using the same key for multiple actions
+  - WoodCutters Balance Hostility is now `]`
+  - WoodCutters Unassign All is now `,`
+  - WoodCutters AssignOne is now `]`
+  - Zoom Overview is still `Backspace`
+
+# 0.8.0
+## Fixes
+- Works with ATS 1.4.15R
+- Can now change hotkeys in the options menu
+  - Changes made to the hotkeys are saved to `AppData\LocalLow\Eremite Games\Against the Storm\API\Stormwalker.custombindings`
+
+## Changed
+- New Icon (Thanks to Thin Creator!)
+- Pressing shift on Ores now starts a Mine
+- Pressing shift on Lakes now starts a Fishing Hut
+
+# 0.7.0
 ## Fixes
 - Works with ATS 1.3.4R
 
@@ -7,7 +28,7 @@
 - Changed save data directory to be in `%localappdata%low/Eremite Games/Against the Storm/Stormwalker.save`
 
 
-# 0.6
+# 0.6.0
 ## Changed
 - Works with ATS Full Release (1.0.1)
 - Now requires x64 version of BepinEx. README adjusted accordingly.
@@ -16,7 +37,7 @@
 - Middle Click trader match offer function is now in the base game
 
 
-# 0.5
+# 0.5.0
 ## Changed
 - The Shift+X and Ctrl+X Hotkeys now directly act as hotkeys for left and right-clicking the Unassign Woodcutters button
 - Had to move the Unassign button because it eclipsed the 5x speed button
@@ -28,7 +49,7 @@
 - Placing paths with P was removed, as building shortcuts provide a more general solution.
 
 
-# 0.4
+# 0.4.0
 ## Added:
 - The copy building key now also works on trees, ore and geysers
 
@@ -42,7 +63,7 @@
 - Consumption Control on I: This now exists in the base game.
 
 
-# 0.3
+# 0.3.0
 ## Additions
 - You can now put a limit on amount of residents allowed in an individual house. This should help with getting exact amounts of people into your hearth upgrades
 - Use Ctrl+RightClick to schedule a worker to leave their workplace after their next production finishes.
@@ -52,7 +73,7 @@
 - You can no longer use Shift in the fog to discover hidden resources.
 
 
-# 0.2
+# 0.2.0
 ## Added
 - See your City Score in the trade menu
 - Use Middle Click on trader menu goods to automatically match the offer.
@@ -69,5 +90,5 @@ Moving the trading post
 - Ctrl-click and Shift-click to increase production limits.
 
 
-# 0.1
+# 0.1.0
 First Release of Stormwalker
