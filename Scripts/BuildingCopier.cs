@@ -44,7 +44,10 @@ namespace Stormwalker {
                     }
                     break;
                 case Lake lake when lake.State.isAvailable:
-                    BuildConditional(Settings.GetBuilding("Fishing Hut"));
+                    if (!BuildConditional(Settings.GetBuilding("Fishing Hut")))
+                    {
+                        BuildConditional(Settings.GetBuilding("Primitive Fishing Hut"));
+                    }
                     break;
                 case Ore ore:
                     BuildConditional(Settings.GetBuilding("Mine"));
