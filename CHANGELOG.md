@@ -1,3 +1,7 @@
+# 0.8.2
+## Fixes
+- Fixed non-stormwalker mod hotkeys being reset
+
 # 0.8.1
 ## Fixes
 - Works with ATS 1.5.5R

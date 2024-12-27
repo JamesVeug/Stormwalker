@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Stormwalker</AssemblyName>
     <Description>An Against the Storm Tweakpack</Description>
-    <Version>0.8.1</Version>
+    <Version>0.8.2</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <StormPath>C:\Program Files (x86)\Steam\steamapps\common\Against the Storm</StormPath>
